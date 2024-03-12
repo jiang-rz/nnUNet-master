@@ -62,24 +62,25 @@ class basicformer_csubject(nn.Module):
         self.mlp2 = Mlp(in_features=dim, hidden_features=dim, act_layer=nn.GELU)
         self.relu=nn.ReLU()
         #self.instancenorm=torch.nn.InstanceNorm3d(self.dim)
-    def forward(self,feature_token,x,usefeature):
+    def forward(self,feature_token,x,usecross2):
         b, c, h, w, z = x.shape
-
+        #if usefeature==False:
+            #x = self.norm2(x)
+            #return x,None,None
         x = x.view(b, h * w * z, c)
         x_input = self.norm1(x)
 
         #feature=self.norm2(self.self_attention(feature)+feature)
         #feature=self.norm3(self.mlp1(feature)+feature)
         x_token = self.token_learner(x_input)
-        if usefeature==False:
-            #x = self.norm2(x)
-            x = x.view(b, c, h, w, z)
-            return x,None,x_token
-        if feature_token!= None:
-            feature_token = feature_token.unsqueeze(0).repeat(b, 1, 1)
+        if usecross2== True and feature_token!=None:
+
         #if feature_token == None and usefeature==True:
         #    return x.view(b,c,h,w,z),None,x_token
-            ref_token=x_token
+            #ref_token=feature_token
+
+            feature_token = feature_token.unsqueeze(0).repeat(b, 1, 1)
+            ref_token=feature_token
             #ref_token=torch.cat([x_token,feature_token],dim=1)
             feature,_=self.token_attention(ref_token,x_token)
             #weights = torch.cosine_similarity(x_token, feature, dim=2, eps=1e-08)
@@ -89,7 +90,15 @@ class basicformer_csubject(nn.Module):
             ref=self.mlp1(self.norm2(ref))+ref
             ref=self.norm3(ref)
         else:
-            ref=x_token
+            ref_token = x_token
+            # ref_token=torch.cat([x_token,feature_token],dim=1)
+            feature, _ = self.token_attention(ref_token, x_token)
+            # weights = torch.cosine_similarity(x_token, feature, dim=2, eps=1e-08)
+            # weights = self.relu(weights)
+            # ref = (x_token + feature * weights.unsqueeze(2))
+            ref = x_token + feature
+            ref = self.mlp1(self.norm2(ref)) + ref
+            ref = self.norm3(ref)
         #print(feature.shape)
 
 
@@ -365,7 +374,7 @@ class UNetDecoder(nn.Module):
         self.csubject_former = nn.ModuleList(csubject_former)
         #self.csubject_former = CsubjectFormer(n_stages, features_per_stage, strides)
 
-    def forward(self, skips,feature=None,usefeature=False):
+    def forward(self, skips,feature=None,usecross2=True):
         """
         we expect to get the skips in the order they were computed, so the bottleneck should be the last entry
         :param skips:
@@ -391,7 +400,7 @@ class UNetDecoder(nn.Module):
 
             x = torch.cat((x, skip), 1)
             x = self.stages_2[s](x)
-            x, weightss, feature_token = self.csubject_former[s](feature_s, x, usefeature)
+            x, weightss, feature_token = self.csubject_former[s](feature_s, x, usecross2)
             feature_outputs.append(feature_token)
             weights_list.append(weightss)
 

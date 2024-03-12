@@ -1412,7 +1412,7 @@ class nnUNetTrainer(object):
             for batch_id in range(self.num_iterations_per_epoch):
                 if self.featureissaving==True:
                     t+=1
-                    if t%10==0:
+                    if t%30==0:
                         self.feature_save = None
                         self.feature_save_mask = None
                     if t>self.num_iterations_per_epoch-2:

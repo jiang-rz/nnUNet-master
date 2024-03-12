@@ -63,12 +63,12 @@ class nnUNetPredictor(object):
             perform_everything_on_gpu = False
         self.device = device
         self.perform_everything_on_gpu = perform_everything_on_gpu
-        self.feature=torch.load('/data7/runzejiang/nnUNet_results/Dataset047_Atlas/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/featurepool/bestmodel/feature_savenew.pth')
+        self.feature=torch.load('/data7/runzejiang/nnUNet_results/Dataset047_Atlas/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/feature_savenew.pth')
         self.feature = [i.to(self.device) for i in self.feature]
         self.feature=None
         self.usefeature=True
         self.feature_test=None
-        self.feature_test_savepath='/data7/runzejiang/nnUNet_results/Dataset047_Atlas/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/featurepool/bestmodel/feature_save.pth'
+        self.feature_test_savepath='/data7/runzejiang/nnUNet_results/Dataset047_Atlas/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/feature_save.pth'
         #self.feature_mask=torch.load('/data7/runzejiang/nnUNet_results/Dataset045_Brats/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/feature_save_masknew.pth')
 
 
